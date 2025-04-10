@@ -57,10 +57,12 @@ function Layout({ children }) {
         position="fixed"
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` }
+          ml: { sm: `${drawerWidth}px` },
+          bgcolor: '#FF9800', // Orange color
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)', // Subtle shadow for minimal design
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ minHeight: '56px' }}> {/* Reduced height for minimal look */}
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -70,8 +72,8 @@ function Layout({ children }) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            {currentUser?.name || 'KIIT Chat'}
+          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 500 }}>
+            {currentUser?.name || 'Chat App'} {/* Updated app name */}
           </Typography>
         </Toolbar>
       </AppBar>

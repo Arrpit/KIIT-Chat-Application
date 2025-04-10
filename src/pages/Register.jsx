@@ -43,7 +43,15 @@ function Register() {
       })
       navigate('/login')
     } catch (err) {
-      setError('Failed to create an account')
+      if (err.details) {
+        // Handle detailed validation errors
+        const errorMessages = Object.values(err.details)
+          .filter(msg => msg !== null)
+          .join('\n')
+        setError(errorMessages || err.message)
+      } else {
+        setError(err.message || 'Failed to create an account')
+      }
     }
   }
 

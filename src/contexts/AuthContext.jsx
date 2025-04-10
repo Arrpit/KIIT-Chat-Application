@@ -78,10 +78,34 @@ export function AuthProvider({ children }) {
     try {
       const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5012'
       const response = await axios.post(`${serverUrl}/api/auth/register`, userData)
+      
+      // If registration is successful, automatically log the user in
+      if (response.data.message === 'User registered successfully') {
+        const loginResponse = await axios.post(`${serverUrl}/api/auth/login`, {
+          email: userData.email,
+          password: userData.password
+        })
+        
+        const { token } = loginResponse.data
+        localStorage.setItem('token', token)
+        
+        const decoded = jwtDecode(token)
+        setCurrentUser(decoded)
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        navigate('/')
+      }
+      
       return response.data
     } catch (error) {
       console.error('Registration error:', error)
       if (error.response) {
+        // Pass through the detailed validation errors if they exist
+        if (error.response.data.details) {
+          throw { 
+            message: error.response.data.message,
+            details: error.response.data.details
+          }
+        }
         throw { message: error.response.data.message || 'Failed to create account' }
       } else if (error.request) {
         throw { message: 'No response from server. Please try again later.' }

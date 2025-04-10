@@ -66,16 +66,8 @@ export function SocketProvider({ children }) {
           const decryptedMessage = bytes.toString(CryptoJS.enc.Utf8)
           
           setMessages(prev => {
-            // Check if message already exists
-            const messageExists = prev.some(msg => 
-              msg._id === message._id ||
-              (msg.senderId === message.senderId && 
-               msg.recipientId === message.recipientId && 
-               msg.content === decryptedMessage && 
-               Math.abs(new Date(msg.timestamp) - new Date(message.timestamp)) < 1000)
-            )
-
-            if (messageExists) {
+            // Check if message already exists by ID
+            if (prev.some(msg => msg._id === message._id)) {
               return prev
             }
 
@@ -83,8 +75,8 @@ export function SocketProvider({ children }) {
             const tempMessageIndex = prev.findIndex(msg => 
               msg.senderId === message.senderId && 
               msg.recipientId === message.recipientId && 
-              !msg._id.includes('-') &&
-              msg.content === decryptedMessage
+              msg.content === decryptedMessage && 
+              msg._id.toString().includes('temp-') // Check for temporary messages
             )
 
             if (tempMessageIndex !== -1) {
@@ -95,13 +87,13 @@ export function SocketProvider({ children }) {
                 content: decryptedMessage
               }
               return newMessages
-            } else {
-              // Add as a new message if no temporary message exists
-              return [...prev, {
-                ...message,
-                content: decryptedMessage
-              }]
             }
+
+            // Add as new message
+            return [...prev, {
+              ...message,
+              content: decryptedMessage
+            }]
           })
         } catch (error) {
           console.error('Message decryption error:', error)
@@ -156,7 +148,7 @@ export function SocketProvider({ children }) {
           senderId: currentUser.id,
           recipientId,
           timestamp: new Date(),
-          _id: Date.now().toString() // Temporary ID
+          _id: `temp-${Date.now()}` // Temporary ID with prefix
         }
 
         // Update UI immediately
